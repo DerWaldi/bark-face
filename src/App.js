@@ -1,7 +1,7 @@
 import React, { Component } from 'react';
 import './App.css';
-import { Grid, Typography, Select, Button, MenuItem } from '@material-ui/core';
-import { A_1, A_2, A_ALL, A_ALTERNATIVE_1, E_1, B_1, D_1, F_1, H_1, K_1, L_1, N_1, T_1, U_1 } from './examples';
+import { Grid, Typography, Select, Button, MenuItem, TextField } from '@material-ui/core';
+import { A_1, A_2, A_ALL, A_ALTERNATIVE_1, E_1, B_1, D_1, F_1, H_1, K_1, L_1, N_1, T_1, U_1, CHARS } from './examples';
 import { withStyles } from '@material-ui/styles';
 import { parsePath, writePath } from './svg/SVGUtils';
 import { Vector2D, analyzePath, pathToPoints, smoothPath, insidePolygon, crackPoints, getSubPaths, roughenPath, stretch, rounden } from './svg/geometry';
@@ -22,52 +22,72 @@ class App extends Component {
     super(props);
     this.state = {
       srcPath: A_1,
-      resPath: A_2,
+      resPath: [],
       circles: [],
       lines: [],
-      age: 0
+      age: 0,
+      play: false,
+      text: "ABDEFHKLNTU"
     }
   }
 
   componentDidMount() {    
     this.transformLetter();
+    setInterval(() => {
+      const {age, play} = this.state;
+      if(play) {
+        if(age === 100) {
+          this.setState({age: 0})
+        } else {        
+          this.setState({age: age + 1})
+        }
+        this.transformLetter();
+      }
+    }, 200)
   }
 
   transformLetter = () => {
-    const {age} = this.state;
-    // randomization parameters
-    let magn = new Vector2D(
-      age * 1.0 + Math.random() * 3, 
-      age * 0.5 + Math.random() * 2
-    );
-    let roundingMagnitude = age + Math.random() * 3;
+    const {age, text} = this.state;
+    let resPath = [];
 
-    var srcPath = parsePath(this.state.srcPath);
-    var circles = [];
-    var lines = [];
+    for(let c of text) {
+      var srcPath = parsePath(CHARS[c]);
 
-    let { points, normals } = analyzePath(srcPath);
+      // randomization parameters
+      let magn = new Vector2D(
+        age * 1.0 + Math.random() * 3, 
+        age * 0.5 + Math.random() * 2
+      );
+      let roundingMagnitude = age + Math.random() * 3;
 
-    // rounden path
-    let newPath = rounden(srcPath, points, normals, roundingMagnitude);
+      var circles = [];
+      var lines = [];
 
-    // stretch
-    newPath = stretch(newPath, points, normals, magn)    
+      let { points, normals } = analyzePath(srcPath);
 
-    // smooth path
-    let newPathSmoothed = smoothPath(newPath, 0.15)
+      // rounden path
+      let newPath = rounden(srcPath, points, normals, roundingMagnitude);
 
-    // roughen path
-    let roughPath = roughenPath(newPathSmoothed, age * 8/100);
+      // stretch
+      newPath = stretch(newPath, points, normals, magn)    
 
-    // smooth roughened again
-    roughPath = smoothPath(roughPath, 0.15);
+      // smooth path
+      let newPathSmoothed = smoothPath(newPath, 0.15)
 
-    // crack points overlay
-    roughPath = crackPoints(roughPath, age);
+      // roughen path
+      let roughPath = roughenPath(newPathSmoothed, age * 8/100);
+
+      // smooth roughened again
+      roughPath = smoothPath(roughPath, 0.15);
+
+      // crack points overlay
+      roughPath = crackPoints(roughPath, age);
+
+      resPath.push(writePath(roughPath));
+    }
     
     this.setState({
-      resPath: writePath(roughPath),
+      resPath: resPath,
       circles: circles,
       lines: lines
     })
@@ -88,49 +108,23 @@ class App extends Component {
     return (
       <div className="App">
         <Typography variant="h5">Calculation:</Typography>
-        <Slider defaultValue={this.state.age} onChange={(e)=>{
+        <TextField value={this.state.text} onChange={(e) => {
+          this.setState({text: e.target.value});
+          setTimeout(() => this.transformLetter(), 10);
+        }} />
+        <Button onClick={() => this.setState({play: !this.state.play})}>{this.state.play ? "Pause": "Play"}</Button>
+        <Slider value={this.state.age} onChange={(e)=>{
           this.setState({age: e});
           setTimeout(() => this.transformLetter(), 10);
         }}></Slider>
-        <Select value={srcPath}
-          onChange={this.handleSelect}>
-          <MenuItem value={A_1}>A</MenuItem>
-          <MenuItem value={B_1}>B</MenuItem>
-          <MenuItem value={D_1}>D</MenuItem>
-          <MenuItem value={E_1}>E</MenuItem>
-          <MenuItem value={F_1}>F</MenuItem>
-          <MenuItem value={H_1}>H</MenuItem>
-          <MenuItem value={K_1}>K</MenuItem>
-          <MenuItem value={L_1}>L</MenuItem>
-          <MenuItem value={N_1}>N</MenuItem>
-          <MenuItem value={T_1}>T</MenuItem>
-          <MenuItem value={U_1}>U</MenuItem>
-        </Select>
-        <Button onClick={this.transformLetter}>Refresh</Button>
-        <Button href={"data:text/plain;charset=utf-8," + encodeURIComponent(svgText)} download="test.svg">Download</Button>
         <Grid container className={classes.transformContainer}>
           <Grid item xs={12}>
-            <svg viewBox="1000 800 1000 1500">
-              <path d={resPath}/>    
-              <path d={srcPath} fill="#ffff0090"/>          
-              {lines.map((c, index) => (
-                <line key={"l" + index} x1={c.x0} y1={c.y0} x2={c.x1} y2={c.y1} stroke={c.stroke}/>
-              ))} 
-              {circles.map((c, index) => (
-                <circle key={"c" + index} cx={c.x} cy={c.y} r={c.r} fill={c.fill}/>
-              ))} 
+            <svg viewBox={"1000 800 " + (1000 * resPath.length) + " 1500"}>
+              {resPath.map((path, index) => (
+                <path transform={"translate(" + (1000 * index) + ", 0)"} d={path}/> 
+              ))}   
             </svg>
           </Grid>
-        </Grid>
-        <Typography variant="h5">Examples:</Typography>
-        <Grid container>
-          {A_ALL.map((c, index) => (
-            <Grid key={index} item xs={2}>
-              <svg viewBox="500 500 2000 2500">
-                <path d={c}/>
-              </svg>
-            </Grid>
-          ))} 
         </Grid>
       </div>
     );
