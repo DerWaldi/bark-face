@@ -69,7 +69,7 @@ export const CHARS = {
   "F": F_1,
   "G": G_1,
   "H": H_1,
-  "I": I_1,
+  //"I": I_1,
   "J": J_1,
   "K": K_1,
   "L": L_1,
