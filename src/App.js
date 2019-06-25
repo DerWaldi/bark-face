@@ -6,6 +6,7 @@ import { withStyles } from '@material-ui/styles';
 import { parsePath, writePath } from './svg/SVGUtils';
 import { Vector2D, analyzePath, pathToPoints, smoothPath, insidePolygon, crackPoints, getSubPaths, roughenPath, stretch, rounden } from './svg/geometry';
 import { Slider } from 'material-ui-slider';
+import { resetSeed, random } from './svg/random';
 
 const styles = theme => ({
   transformContainer: {
@@ -27,7 +28,8 @@ class App extends Component {
       lines: [],
       age: 0,
       play: false,
-      text: "ABDEFHKLNTU"
+      text: "SEBI",
+      seed: 42
     }
   }
 
@@ -51,14 +53,16 @@ class App extends Component {
     let resPath = [];
 
     for(let c of text) {
+      resetSeed(this.state.seed);
+      
       var srcPath = parsePath(CHARS[c]);
 
       // randomization parameters
       let magn = new Vector2D(
-        age * 1.0 + Math.random() * 3, 
-        age * 0.5 + Math.random() * 2
+        age * 1.0 + random() * 3, 
+        age * 0.5 + random() * 2
       );
-      let roundingMagnitude = age + Math.random() * 3;
+      let roundingMagnitude = age + random() * 3;
 
       var circles = [];
       var lines = [];
@@ -107,7 +111,11 @@ class App extends Component {
     const svgText = '<svg viewBox="1000 800 1000 1500"><path d="' + resPath + '"/><path d="' + srcPath + '" fill="#ffff00"/>  </svg>'
     return (
       <div className="App">
-        <Typography variant="h5">Calculation:</Typography>
+        <Typography variant="h5">Parameters:</Typography>
+        <Button onClick={() => {
+          this.setState({seed: Math.random() * 100});      
+          setTimeout(() => this.transformLetter(), 10);
+        }}>Shuffle</Button>
         <TextField value={this.state.text} onChange={(e) => {
           this.setState({text: e.target.value});
           setTimeout(() => this.transformLetter(), 10);
@@ -117,6 +125,7 @@ class App extends Component {
           this.setState({age: e});
           setTimeout(() => this.transformLetter(), 10);
         }}></Slider>
+        <Typography variant="h5">Result:</Typography>
         <Grid container className={classes.transformContainer}>
           <Grid item xs={12}>
             <svg viewBox={"1000 800 " + (1000 * resPath.length) + " 1500"}>

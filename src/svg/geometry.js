@@ -1,4 +1,5 @@
 import { writePath } from "./SVGUtils";
+import { random } from "./random";
 
 // https://developer.mozilla.org/en-US/docs/Web/SVG/Attribute/d
 
@@ -102,7 +103,7 @@ export function roughenPath(newPathSmoothed, magn) {
 
     for(let i = 1; i < length; i+=20) {
       var point = properties.getPointAtLength(i);
-      roughPath.push(["L", Math.random() * magn - magn/2 + point.x, Math.random() * magn - magn/2 + point.y]);      
+      roughPath.push(["L", random() * magn - magn/2 + point.x, random() * magn - magn/2 + point.y]);      
     }
     roughPath.push(["z"]);
   }
