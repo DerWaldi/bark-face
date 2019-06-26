@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/bark-face/static/css/main.2cce8147.chunk.css",
-    "main.js": "/bark-face/static/js/main.762441ad.chunk.js",
-    "main.js.map": "/bark-face/static/js/main.762441ad.chunk.js.map",
+    "main.js": "/bark-face/static/js/main.655f538e.chunk.js",
+    "main.js.map": "/bark-face/static/js/main.655f538e.chunk.js.map",
     "runtime~main.js": "/bark-face/static/js/runtime~main.f771ce3a.js",
     "runtime~main.js.map": "/bark-face/static/js/runtime~main.f771ce3a.js.map",
     "static/js/2.ec907d0f.chunk.js": "/bark-face/static/js/2.ec907d0f.chunk.js",
     "static/js/2.ec907d0f.chunk.js.map": "/bark-face/static/js/2.ec907d0f.chunk.js.map",
     "index.html": "/bark-face/index.html",
-    "precache-manifest.16975ed702ca3efd7544449e41110c3b.js": "/bark-face/precache-manifest.16975ed702ca3efd7544449e41110c3b.js",
+    "precache-manifest.67a48231f278294200a9b871bcdf22f8.js": "/bark-face/precache-manifest.67a48231f278294200a9b871bcdf22f8.js",
     "service-worker.js": "/bark-face/service-worker.js",
     "static/css/main.2cce8147.chunk.css.map": "/bark-face/static/css/main.2cce8147.chunk.css.map"
   }
