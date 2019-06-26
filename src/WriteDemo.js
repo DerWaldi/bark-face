@@ -71,10 +71,6 @@ class WriteDemo extends Component {
         age * 1.0 + random() * 2
       );
       let roundingMagnitude = age + random() * 3;
-
-      var circles = [];
-      var lines = [];
-
       let { points, normals } = analyzePath(srcPath);
 
       // rounden path
@@ -96,9 +92,7 @@ class WriteDemo extends Component {
     }
     
     this.setState({
-      resPath: resPath,
-      circles: circles,
-      lines: lines
+      resPath: resPath
     })
   }
 

@@ -10,19 +10,21 @@ import { resetSeed, random } from './svg/random';
 const styles = () => ({
   transformContainer: {
     height: 700,
+    cursor: "crosshair",
   },
   canvas: {
     width: "100%",
     height: "100%",
   }
 });
+const maxAge = 80;
 
 class SketchDemo extends Component {
   constructor(props) {
     super(props);
     this.state = {
-      srcPath: A_1,
-      resPath: [],
+      srcPath: "",
+      resPath: "",
       circles: [],
       lines: [],
       age: 0,
@@ -37,8 +39,8 @@ class SketchDemo extends Component {
     setInterval(() => {
       const {age, play} = this.state;
       if(play) {
-        if(age === 100) {
-          this.setState({age: 0})
+        if(age === 80) {
+          this.setState({ play: false})
         } else {        
           this.setState({age: age + 1})
         }
@@ -48,88 +50,127 @@ class SketchDemo extends Component {
   }
 
   transformLetter = () => {
-    const {age, text} = this.state;
+    const {age} = this.state;
     let resPath = [];
 
-    for(let c of text) {
-      resetSeed(this.state.seed);
-      
-      var srcPath = parsePath(CHARS[c]);
+    resetSeed(this.state.seed);
 
-      // randomization parameters
-      let magn = new Vector2D(
-        age * 1.0 + random() * 3, 
-        age * 0.5 + random() * 2
-      );
-      let roundingMagnitude = age + random() * 3;
+    if(!this.state.srcPath)
+      return;
+    
+    var srcPath = parsePath(this.state.srcPath);
 
-      var circles = [];
-      var lines = [];
+    // randomization parameters
+    let magn = new Vector2D(
+      age * 2.0 + random() * 3, 
+      age * 1.0 + random() * 2
+    );
+    let roundingMagnitude = age + random() * 3;
 
-      let { points, normals } = analyzePath(srcPath);
+    var lines = [];
 
-      // rounden path
-      let newPath = rounden(srcPath, points, normals, roundingMagnitude);
+    let { points, normals } = analyzePath(srcPath);
 
-      // stretch
-      newPath = stretch(newPath, points, normals, magn)    
+    // rounden path
+    let newPath = rounden(srcPath, points, normals, roundingMagnitude);
 
-      // smooth path
-      let newPathSmoothed = smoothPath(newPath, 0.15)
+    // stretch
+    newPath = stretch(newPath, points, normals, magn)  
 
-      // roughen path
-      let roughPath = roughenPath(newPathSmoothed, age * 8/100);
+    // roughen path
+    newPath = roughenPath(newPath, age * 8/maxAge);
 
-      // smooth roughened again
-      roughPath = smoothPath(roughPath, 0.15);
+    // smooth roughened again
+    newPath = smoothPath(newPath, Math.min(0, age - 40) / maxAge * 0.15 + 0.05);
 
-      // crack points overlay
-      roughPath = crackPoints(roughPath, age);
-
-      resPath.push(writePath(roughPath));
-    }
+    // crack points overlay
+    newPath = crackPoints(newPath, age);
     
     this.setState({
-      resPath: resPath,
-      circles: circles,
+      resPath: writePath(newPath),
       lines: lines
     })
   }
 
-  handleSelect = (e) => {
-    this.setState({
-      srcPath: e.target.value,
-    });
-    setTimeout(() => this.transformLetter(), 100);
+  drawPoints = [];
+
+  getMousePosition(e) {
+    let scaleFactor = 3000 / this.canvas.getBoundingClientRect().width;
+    return new Vector2D(((e.clientX - this.canvas.getBoundingClientRect().x) * scaleFactor) + 1000, ((e.clientY - this.canvas.getBoundingClientRect().y) * scaleFactor) + 800)
   }
+
+  mouseDown = (e) => {
+    let p = this.getMousePosition(e);
+    this.drawPoints.push(p);
+    this.drawing = true;
+  };
+
+  mouseMove = (e) => {
+    let p = this.getMousePosition(e);
+    if(this.drawing) {
+      this.drawPoints.push(p);
+    }
+  };
+
+  mouseUp = (e) => {
+    this.drawing = false;
+    let p = this.getMousePosition(e);
+    this.drawPoints.push(p);
+
+    let path = parsePath(this.state.srcPath);
+
+    path.push(["M", this.drawPoints[0].x, this.drawPoints[0].y]);
+    for(let i = 1; i < this.drawPoints.length; i++) {
+      let normalVector = [
+        -(this.drawPoints[i].y - this.drawPoints[i-1].y),
+        (this.drawPoints[i].x - this.drawPoints[i-1].x)
+      ];
+      let normalVectorLength = Math.sqrt(normalVector[0] * normalVector[0] + normalVector[1] * normalVector[1]);
+      normalVector[0] /= normalVectorLength;
+      normalVector[1] /= normalVectorLength;
+
+      path.push(["L", this.drawPoints[i].x + normalVector[0] * 20, this.drawPoints[i].y + normalVector[1] * 20]);
+    }
+    for(let i = this.drawPoints.length - 1; i > 0; i--) {
+      let normalVector = [
+        -(this.drawPoints[i].y - this.drawPoints[i-1].y),
+        (this.drawPoints[i].x - this.drawPoints[i-1].x)
+      ];
+      let normalVectorLength = Math.sqrt(normalVector[0] * normalVector[0] + normalVector[1] * normalVector[1]);
+      normalVector[0] /= normalVectorLength;
+      normalVector[1] /= normalVectorLength;
+
+      path.push(["L", this.drawPoints[i].x - normalVector[0] * 20, this.drawPoints[i].y - normalVector[1] * 20]);
+    }
+    path.push("z");
+
+    this.drawPoints = [];
+
+    this.setState({
+      srcPath: writePath(path),
+      resPath: writePath(path),
+      play: true,
+      age: 0
+    });
+  };
 
   render(){
     const {classes} = this.props;
-    const {srcPath, resPath} = this.state;
+    const {srcPath, resPath, circles} = this.state;
 
     return (
       <div className="App">
-        <Typography variant="h5">SketchDemo:</Typography>
-        <Button onClick={() => {
-          this.setState({seed: Math.random() * 100});      
-          setTimeout(() => this.transformLetter(), 10);
-        }}>Shuffle</Button>
-        <TextField value={this.state.text} onChange={(e) => {
-          this.setState({text: e.target.value});
-          setTimeout(() => this.transformLetter(), 10);
-        }} />
-        <Button onClick={() => this.setState({play: !this.state.play})}>{this.state.play ? "Pause": "Play"}</Button>
-        <Slider value={this.state.age} onChange={(e)=>{
-          this.setState({age: e});
-          setTimeout(() => this.transformLetter(), 10);
-        }}></Slider>
-        <Typography variant="h5">Result:</Typography>
+        <Typography variant="h5">Draw Something:</Typography>
         <Grid container className={classes.transformContainer}>
           <Grid item xs={12}>
-            <svg viewBox={"1000 800 " + (1000 * resPath.length) + " 1500"}>
-              {resPath.map((path, index) => (
-                <path transform={"translate(" + (1000 * index) + ", 0)"} d={path}/> 
-              ))}   
+            <svg ref={c => this.canvas = c} viewBox={"1000 800 3000 1500"} 
+              onMouseDown={this.mouseDown}
+              onMouseUp={this.mouseUp}
+              onMouseMove={this.mouseMove}>
+              <path d={resPath}/> 
+              {circles.map((c, index) => (
+                <circle key={"c" + index} cx={c.x} cy={c.y} r={c.r} fill={c.fill}/>
+              ))} 
             </svg>
           </Grid>
         </Grid>

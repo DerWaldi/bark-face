@@ -32,7 +32,7 @@ class App extends Component {
         <AppBar position="">
           <Toolbar>
             <a aria-label="Menu" href="/">
-              <img className={classes.menuButton} src="/logo.png" />
+              <img className={classes.menuButton} src="logo.png" />
             </a>
             <Typography variant="h6" color="inherit" className={classes.grow}>
             </Typography>
