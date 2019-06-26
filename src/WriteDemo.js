@@ -1,11 +1,13 @@
 import React, { Component } from 'react';
-import { Grid, Typography, Button, TextField } from '@material-ui/core';
+import { Grid, Typography, Button, TextField, IconButton, FormHelperText } from '@material-ui/core';
 import { A_1, CHARS } from './examples';
 import { withStyles } from '@material-ui/styles';
 import { parsePath, writePath } from './svg/SVGUtils';
 import { Vector2D, analyzePath, smoothPath, crackPoints, roughenPath, stretch, rounden } from './svg/geometry';
 import { Slider } from 'material-ui-slider';
 import { resetSeed, random } from './svg/random';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import { faDice, faDownload } from '@fortawesome/free-solid-svg-icons'
 
 const styles = () => ({
   transformContainer: {
@@ -14,6 +16,11 @@ const styles = () => ({
   canvas: {
     width: "100%",
     height: "100%",
+  },
+  downloadBtn: {
+    position: "absolute",
+    top: 80,
+    right: 20,
   }
 });
 
@@ -80,7 +87,7 @@ class WriteDemo extends Component {
       newPath = roughenPath(newPath, age * 8/maxAge);
 
       // smooth roughened again
-      newPath = smoothPath(newPath, 0.15);
+      newPath = smoothPath(newPath, Math.min(0, age - 40) / maxAge * 0.15 + 0.05);
 
       // crack points overlay
       newPath = crackPoints(newPath, age);
@@ -106,31 +113,44 @@ class WriteDemo extends Component {
     const {classes} = this.props;
     const {srcPath, resPath} = this.state;
 
+    const svgText = '<svg viewBox="1000 800 ' + (1000 * resPath.length) + ' 1500">' + 
+      resPath.map((path, index) => '<path transform="translate(' + (1000 * index) + ', 0)" d="' + path + '" />').join() + 
+      ' </svg>';
+
     return (
       <div className="App">
-        <Typography variant="h5">Parameters:</Typography>
-        <Button onClick={() => {
-          this.setState({seed: Math.random() * 100});      
-          setTimeout(() => this.transformLetter(), 10);
-        }}>Shuffle</Button>
-        <TextField value={this.state.text} onChange={(e) => {
-          this.setState({text: e.target.value});
-          setTimeout(() => this.transformLetter(), 10);
-        }} />
-        <Button onClick={() => this.setState({play: !this.state.play})}>{this.state.play ? "Pause": "Play"}</Button>
-        <Typography>{"Age = " + this.state.age}</Typography>
-        <Slider value={this.state.age} min={0} max={maxAge} onChange={(e)=>{
-          this.setState({age: e});
-          setTimeout(() => this.transformLetter(), 10);
-        }}></Slider>
-        <Typography variant="h5">Result:</Typography>
-        <Grid container className={classes.transformContainer}>
-          <Grid item xs={12}>
-            <svg viewBox={"1000 800 " + (1000 * resPath.length) + " 1500"}>
-              {resPath.map((path, index) => (
-                <path transform={"translate(" + (1000 * index) + ", 0)"} d={path}/> 
-              ))}   
-            </svg>
+        <Grid container>
+          <Grid item xs={3} style={{padding: 20}}>
+            <Typography variant="h5">Parameters:</Typography>
+
+            <IconButton onClick={() => {
+              this.setState({seed: Math.random() * 100});      
+              setTimeout(() => this.transformLetter(), 10);
+            }}><FontAwesomeIcon icon={faDice}/></IconButton>
+
+            <TextField fullWidth label="Engraved Text:" value={this.state.text} onChange={(e) => {
+              this.setState({text: e.target.value.toUpperCase()});
+              setTimeout(() => this.transformLetter(), 10);
+            }} />
+            <br/>
+            <FormHelperText>Age</FormHelperText>
+            <Slider value={this.state.age} min={0} max={maxAge} onChange={(e)=>{
+              this.setState({age: e});
+              setTimeout(() => this.transformLetter(), 10);
+            }}></Slider>
+
+            <Button onClick={() => this.setState({play: !this.state.play})}>{this.state.play ? "Pause": "Play Animation"}</Button>
+          </Grid>
+          <Grid item xs={9} className={classes.transformContainer} style={{padding: 20}}>
+            <Typography variant="h5">{"Result after approx. " + this.state.age + " years:"}</Typography>
+            <svg viewBox={"1000 800 " + (1000 * resPath.length) + " 1500"} style={{maxHeight: 700}}>
+                {resPath.map((path, index) => (
+                  <path transform={"translate(" + (1000 * index) + ", 0)"} d={path}/> 
+                ))}   
+            </svg>            
+            <IconButton href={"data:text/plain;charset=utf-8," + encodeURIComponent(svgText)} download="bark.svg" className={classes.downloadBtn}>
+              <FontAwesomeIcon icon={faDownload} />
+            </IconButton>
           </Grid>
         </Grid>
       </div>

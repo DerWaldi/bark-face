@@ -32,10 +32,9 @@ class App extends Component {
         <AppBar position="">
           <Toolbar>
             <a aria-label="Menu" href="/">
-              <img className={classes.menuButton} src="/examples/A_5.svg" />
+              <img className={classes.menuButton} src="/logo.png" />
             </a>
             <Typography variant="h6" color="inherit" className={classes.grow}>
-              Bark Face
             </Typography>
             <Button color="inherit" href="#/sketch">
               Sketch
