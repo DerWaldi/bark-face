@@ -6,6 +6,8 @@ import { parsePath, writePath } from './svg/SVGUtils';
 import { Vector2D, analyzePath, smoothPath, crackPoints, roughenPath, stretch, rounden } from './svg/geometry';
 import { Slider } from 'material-ui-slider';
 import { resetSeed, random } from './svg/random';
+import { brown } from '@material-ui/core/colors';
+import PolyBool from 'polybooljs';
 
 const styles = () => ({
   transformContainer: {
@@ -30,7 +32,13 @@ class SketchDemo extends Component {
       age: 0,
       play: false,
       text: "TEST",
-      seed: 42
+      seed: 42,
+      comb: {
+        regions: [
+          [],
+        ],
+        inverted: false
+      }
     }
   }
 
@@ -115,11 +123,15 @@ class SketchDemo extends Component {
   mouseUp = (e) => {
     this.drawing = false;
     let p = this.getMousePosition(e);
-    this.drawPoints.push(p);
+    //this.drawPoints.push(p);
 
-    let path = parsePath(this.state.srcPath);
-
-    path.push(["M", this.drawPoints[0].x, this.drawPoints[0].y]);
+    let seg1 = {
+      regions: [
+        [],
+      ],
+      inverted: false
+    };
+    seg1.regions[0].push([this.drawPoints[0].x, this.drawPoints[0].y]);
     for(let i = 1; i < this.drawPoints.length; i++) {
       let normalVector = [
         -(this.drawPoints[i].y - this.drawPoints[i-1].y),
@@ -129,7 +141,9 @@ class SketchDemo extends Component {
       normalVector[0] /= normalVectorLength;
       normalVector[1] /= normalVectorLength;
 
-      path.push(["L", this.drawPoints[i].x + normalVector[0] * 20, this.drawPoints[i].y + normalVector[1] * 20]);
+      let p1 = new Vector2D(this.drawPoints[i].x - normalVector[0] * 20, this.drawPoints[i].y - normalVector[1] * 20);
+      if(!isNaN(p1.x) && !isNaN(p1.y))
+        seg1.regions[0].push([p1.x, p1.y]);
     }
     for(let i = this.drawPoints.length - 1; i > 0; i--) {
       let normalVector = [
@@ -140,13 +154,30 @@ class SketchDemo extends Component {
       normalVector[0] /= normalVectorLength;
       normalVector[1] /= normalVectorLength;
 
-      path.push(["L", this.drawPoints[i].x - normalVector[0] * 20, this.drawPoints[i].y - normalVector[1] * 20]);
+      let p1 = new Vector2D(this.drawPoints[i].x + normalVector[0] * 20, this.drawPoints[i].y + normalVector[1] * 20);
+      if(!isNaN(p1.x) && !isNaN(p1.y))
+        seg1.regions[0].push([p1.x, p1.y]);
     }
-    path.push("z");
+
+    console.log(seg1)
+
+    let comb = PolyBool.union(seg1, this.state.comb);
+
+    let combPoints = comb.regions[0].map(c => new Vector2D(c[0], c[1]));
+
+    let path = parsePath(this.state.srcPath);
+    path.push(["M", combPoints[0].x, combPoints[0].y]);
+    for(let i = 1; i < combPoints.length; i++) {
+      path.push(["L", combPoints[i].x, combPoints[i].y]);
+    }
+    path.push(["z"]);
+
+    console.log(path)
 
     this.drawPoints = [];
 
     this.setState({
+      comb: comb,
       srcPath: writePath(path),
       resPath: writePath(path),
       play: true,
@@ -156,21 +187,18 @@ class SketchDemo extends Component {
 
   render(){
     const {classes} = this.props;
-    const {srcPath, resPath, circles} = this.state;
+    const {srcPath, resPath} = this.state;
 
     return (
       <div className="App">
         <Typography variant="h5">Draw Something:</Typography>
-        <Grid container className={classes.transformContainer}>
-          <Grid item xs={12}>
-            <svg ref={c => this.canvas = c} viewBox={"1000 800 3000 1500"} 
+        <Grid container className={classes.transformContainer}
               onMouseDown={this.mouseDown}
               onMouseUp={this.mouseUp}
               onMouseMove={this.mouseMove}>
-              <path d={resPath}/> 
-              {circles.map((c, index) => (
-                <circle key={"c" + index} cx={c.x} cy={c.y} r={c.r} fill={c.fill}/>
-              ))} 
+          <Grid item xs={12}>
+            <svg ref={c => this.canvas = c} viewBox={"1000 800 3000 3000"} style={{background: "url(bark_texture.jpg)"}}>
+              <path d={resPath} fill="#BF966A"/> 
             </svg>
           </Grid>
         </Grid>
