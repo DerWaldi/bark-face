@@ -1,19 +1,19 @@
 self.__precacheManifest = (self.__precacheManifest || []).concat([
   {
-    "revision": "ff759a0e356763a1af9461f15bf4d738",
+    "revision": "a93a8f925d102bb5955fab4119503e73",
     "url": "/bark-face/index.html"
   },
   {
-    "revision": "b9968f9f71be45e4b80b",
+    "revision": "28b55c31ab58439d22d6",
     "url": "/bark-face/static/css/main.2cce8147.chunk.css"
   },
   {
-    "revision": "3bddbbdc28c9fe2a1060",
-    "url": "/bark-face/static/js/2.ec907d0f.chunk.js"
+    "revision": "e438e5f074f9f8e98703",
+    "url": "/bark-face/static/js/2.b271d4c8.chunk.js"
   },
   {
-    "revision": "b9968f9f71be45e4b80b",
-    "url": "/bark-face/static/js/main.655f538e.chunk.js"
+    "revision": "28b55c31ab58439d22d6",
+    "url": "/bark-face/static/js/main.c874c53d.chunk.js"
   },
   {
     "revision": "d4e5bfbd76e4bcaa82da",
