@@ -1,14 +1,14 @@
 {
   "files": {
     "main.css": "/bark-face/static/css/main.2cce8147.chunk.css",
-    "main.js": "/bark-face/static/js/main.c221e227.chunk.js",
-    "main.js.map": "/bark-face/static/js/main.c221e227.chunk.js.map",
+    "main.js": "/bark-face/static/js/main.bd9c343d.chunk.js",
+    "main.js.map": "/bark-face/static/js/main.bd9c343d.chunk.js.map",
     "runtime~main.js": "/bark-face/static/js/runtime~main.f771ce3a.js",
     "runtime~main.js.map": "/bark-face/static/js/runtime~main.f771ce3a.js.map",
-    "static/js/2.56006079.chunk.js": "/bark-face/static/js/2.56006079.chunk.js",
-    "static/js/2.56006079.chunk.js.map": "/bark-face/static/js/2.56006079.chunk.js.map",
+    "static/js/2.6f340631.chunk.js": "/bark-face/static/js/2.6f340631.chunk.js",
+    "static/js/2.6f340631.chunk.js.map": "/bark-face/static/js/2.6f340631.chunk.js.map",
     "index.html": "/bark-face/index.html",
-    "precache-manifest.922aee65bbe96683db48544023483127.js": "/bark-face/precache-manifest.922aee65bbe96683db48544023483127.js",
+    "precache-manifest.6d4114b051ff2206ed5bef36a3a839ec.js": "/bark-face/precache-manifest.6d4114b051ff2206ed5bef36a3a839ec.js",
     "service-worker.js": "/bark-face/service-worker.js",
     "static/css/main.2cce8147.chunk.css.map": "/bark-face/static/css/main.2cce8147.chunk.css.map"
   }
